@@ -1,0 +1,37 @@
+[package]
+name = "warmvector"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[profile.release]
+# This makes the compiled code faster and smaller, but it makes compiling slower,
+# so it's only enabled in release mode.
+lto = true
+
+[dependencies]
+# The `wasm-bindgen` crate provides the bare minimum functionality needed
+# to interact with JavaScript.
+wasm-bindgen = "0.2.73"
+
+# Game dependencies:
+bevy = "0.8.1"
+bevy-inspector-egui = "0.13.0"
+geo = "0.23.0"
+geo-booleanop = "0.3.2"
+rand = "0.8.5"
+
+# The `web-sys` crate allows you to interact with the various browser APIs
+[dependencies.web-sys]
+version = "0.3.60"
+features = ["console"]
+
+
+# These crates are used for running unit tests.
+# [dev-dependencies]
+# wasm-bindgen-test = "0.2.45"
+# futures = "0.1.27"
+# js-sys = "0.3.22"
+# wasm-bindgen-futures = "0.3.22"
