@@ -1,9 +1,8 @@
 {
-  "author": "You <you@example.com>",
-  "name": "rust-webpack-template",
-  "version": "0.1.0",
+  "private": true,
+  "name": "warmvector",
   "scripts": {
-    "build": "rm -rf www pkg && NODE_ENV=production webpack",
+    "build": "rm -rf www pkg && NODE_ENV=production webpack && ls www/*.wasm",
     "dev": "rm -rf www pkg && NODE_ENV=development webpack serve",
     "test": "cargo test && wasm-pack test --headless"
   },
