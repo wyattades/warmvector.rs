@@ -4,6 +4,8 @@ const WasmPackPlugin = require("@wasm-tool/wasm-pack-plugin");
 
 const ROOT = path.resolve(__dirname);
 
+console.log({ ROOT });
+
 /** @type {import('webpack').Configuration} */
 module.exports = {
   mode: process.env.NODE_ENV === "development" ? "development" : "production",
