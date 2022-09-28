@@ -21,7 +21,8 @@ pub fn create_app() {
         // .add_plugin(WorldInspectorPlugin::new())
         .add_startup_system(setup)
         .add_plugins(DefaultPlugins)
-        .add_plugin(PlayersPlugin)
+        .add_plugin(PlayerPlugin)
+        .add_plugin(EnemyPlugin)
         .add_plugin(UIPlugin)
         .run();
 }
