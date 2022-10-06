@@ -109,7 +109,7 @@ class WasmPackPlugin {
     compiler.hooks.thisCompilation.tap("WasmPackPlugin", (compilation) => {
       // Super hacky, needed to workaround a bug in Webpack which causes
       // thisCompilation to be triggered twice on the first compilation.
-      if (first) {
+      if (this.isDebug && first) {
         first = false;
       } else {
         // This is needed in order to gracefully handle errors in Webpack,
@@ -214,6 +214,8 @@ async function spawnWasmPack({
   if (!binStat || (!binStat.isFile() && !binStat.isSymbolicLink()))
     throw new Error(`wasm-pack at '${this.crateDirectory}' is not executable`);
 
+  await runProcess(bin, ["--version"], { cwd });
+
   const allArgs = [
     ...args,
     "build",
@@ -227,7 +229,6 @@ async function spawnWasmPack({
 
   const options = {
     cwd,
-    stdio: "inherit",
   };
 
   console.log("spawnWasmPack", bin, allArgs, options);
@@ -235,9 +236,12 @@ async function spawnWasmPack({
   return runProcess(bin, allArgs, options);
 }
 
-function runProcess(bin, args, options) {
+function runProcess(bin, args = [], options = {}) {
   return new Promise((resolve, reject) => {
-    const p = spawn(bin, args, options);
+    const p = spawn(bin, args, {
+      stdio: "inherit",
+      ...options,
+    });
 
     p.on("close", (code) => {
       if (code === 0) {
