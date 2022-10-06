@@ -212,9 +212,7 @@ async function spawnWasmPack({
 
   const binStat = await fs.promises.stat(bin).catch(() => null);
   if (!binStat || (!binStat.isFile() && !binStat.isSymbolicLink()))
-    throw new Error(`wasm-pack at '${this.crateDirectory}' is not executable`);
-
-  await runProcess(bin, ["--version"], { cwd });
+    throw new Error(`wasm-pack at '${binStat}' is not executable`);
 
   const allArgs = [
     ...args,
@@ -227,8 +225,12 @@ async function spawnWasmPack({
     ...extraArgs,
   ];
 
+  /** @type {import("child_process").CommonSpawnOptions} */
   const options = {
     cwd,
+    env: {
+      RUST_LOG: "debug",
+    },
   };
 
   console.log("spawnWasmPack", bin, allArgs, options);
