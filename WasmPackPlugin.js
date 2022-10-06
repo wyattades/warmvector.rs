@@ -164,14 +164,13 @@ class WasmPackPlugin {
         } mode...\n`
       );
 
-      try {
-        const crateDirStat = await fs.promises.stat(this.crateDirectory);
-        if (!crateDirStat.isDirectory()) throw new Error(`not a directory`);
-      } catch (err) {
+      const crateDirStat = await fs.promises
+        .stat(this.crateDirectory)
+        .catch(() => null);
+      if (!crateDirStat || !crateDirStat.isDirectory())
         throw new Error(
-          `Crate directory at ${this.crateDirectory} is invalid: ${err}`
+          `Crate directory at '${this.crateDirectory}' is not a directory`
         );
-      }
 
       const detail = await spawnWasmPack({
         outDir: this.outDir,
@@ -191,7 +190,7 @@ class WasmPackPlugin {
     } catch (err) {
       // Webpack has a custom error system, so we cannot return an
       // error directly, instead we need to trigger it later.
-      this.error = e;
+      this.error = err;
 
       if (watching) {
         // This is to trigger a recompilation so it displays the error message
@@ -201,8 +200,19 @@ class WasmPackPlugin {
   }
 }
 
-function spawnWasmPack({ outDir, outName, isDebug, cwd, args, extraArgs }) {
+async function spawnWasmPack({
+  outDir,
+  outName,
+  isDebug,
+  cwd,
+  args = [],
+  extraArgs = [],
+}) {
   const bin = findWasmPack();
+
+  const binStat = await fs.promises.stat(bin).catch(() => null);
+  if (!binStat || (!binStat.isFile() && !binStat.isSymbolicLink()))
+    throw new Error(`wasm-pack at '${this.crateDirectory}' is not executable`);
 
   const allArgs = [
     ...args,
