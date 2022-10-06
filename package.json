@@ -5,13 +5,15 @@
     "vercel-build": "scripts/vercel-build.sh && yarn build",
     "build": "rm -rf www pkg && NODE_ENV=production webpack && ls www/*.wasm",
     "dev": "rm -rf www pkg && NODE_ENV=development webpack serve",
-    "test": "cargo test && wasm-pack test --headless"
+    "test": "cargo test && wasm-pack test --headless",
+    "watch": "nodemon -w src -e rs -x 'cargo run'"
   },
   "devDependencies": {
     "@wasm-tool/wasm-pack-plugin": "^1.6.0",
     "copy-webpack-plugin": "^11",
     "webpack": "^5",
     "webpack-cli": "^4",
-    "webpack-dev-server": "^4"
+    "webpack-dev-server": "^4",
+    "nodemon": "^2.0.20"
   }
 }
