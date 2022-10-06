@@ -1,10 +1,9 @@
 const path = require("path");
 const CopyPlugin = require("copy-webpack-plugin");
-const WasmPackPlugin = require("@wasm-tool/wasm-pack-plugin");
+// const WasmPackPlugin = require("@wasm-tool/wasm-pack-plugin");
+const WasmPackPlugin = require("./WasmPackPlugin");
 
 const ROOT = path.resolve(__dirname);
-
-console.log({ ROOT });
 
 /** @type {import('webpack').Configuration} */
 module.exports = {
