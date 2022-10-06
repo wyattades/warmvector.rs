@@ -12,7 +12,7 @@ jobs:
         uses: actions-rs/toolchain@v1.0.6
         with:
           toolchain: stable
-          # target: wasm32-undefined-undefined
+          target: wasm32-undefined-undefined
 
       - name: Install node.js
         uses: actions/setup-node@v3
