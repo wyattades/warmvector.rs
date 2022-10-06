@@ -2,8 +2,11 @@ use wasm_bindgen::prelude::*;
 
 extern crate wasm_bindgen;
 
+mod ai;
 mod app;
-mod players;
+mod entity;
+mod level;
+mod player;
 mod ui;
 
 #[wasm_bindgen]

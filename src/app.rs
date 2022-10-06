@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 // use bevy_inspector_egui::WorldInspectorPlugin;
 
-use crate::{players::*, ui::*};
+use crate::{ai::*, entity::*, level::*, player::*, ui::*};
 
 pub fn create_app() {
     App::new()
@@ -21,13 +21,17 @@ pub fn create_app() {
         // .add_plugin(WorldInspectorPlugin::new())
         .add_startup_system(setup)
         .add_plugins(DefaultPlugins)
+        .add_plugin(LevelPlugin)
+        .add_plugin(EntityPlugin)
         .add_plugin(PlayerPlugin)
-        .add_plugin(EnemyPlugin)
+        .add_plugin(AiPlugin)
         .add_plugin(UIPlugin)
         .run();
 }
 
 fn setup(mut commands: Commands) {
     // Camera
-    commands.spawn_bundle(Camera2dBundle::default());
+    commands
+        .spawn_bundle(Camera2dBundle::default())
+        .insert(Velocity(Vec2::ZERO));
 }

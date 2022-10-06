@@ -1,5 +1,8 @@
+mod ai;
 mod app;
-mod players;
+mod entity;
+mod level;
+mod player;
 mod ui;
 
 fn main() {
