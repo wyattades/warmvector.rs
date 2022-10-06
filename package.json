@@ -3,7 +3,7 @@
   "name": "warmvector",
   "scripts": {
     "vercel-build": "scripts/vercel-build.sh && yarn build",
-    "build": "rm -rf www pkg && NODE_ENV=production webpack && ls www/*.wasm",
+    "build": "rm -rf www pkg && wasm-pack build --out-name index --verbose && NODE_ENV=production webpack",
     "dev": "rm -rf www pkg && NODE_ENV=development webpack serve",
     "test": "cargo test && wasm-pack test --headless",
     "watch": "nodemon -w src -e rs -x 'cargo run'"

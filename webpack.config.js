@@ -5,6 +5,8 @@ const WasmPackPlugin = require("./WasmPackPlugin");
 
 const ROOT = path.resolve(__dirname);
 
+const IS_DEV = process.env.NODE_ENV === "development";
+
 /** @type {import('webpack').Configuration} */
 module.exports = {
   mode: process.env.NODE_ENV === "development" ? "development" : "production",
@@ -32,8 +34,12 @@ module.exports = {
       ],
     }),
 
-    new WasmPackPlugin({
-      crateDirectory: ROOT,
-    }),
+    ...(IS_DEV
+      ? [
+          new WasmPackPlugin({
+            crateDirectory: ROOT,
+          }),
+        ]
+      : []),
   ],
 };
