@@ -2,7 +2,7 @@
   "private": true,
   "name": "warmvector",
   "scripts": {
-    "vercel-build": "scripts/vercel-build.sh && yarn build",
+    "vercel-build": "scripts/vercel-build.sh",
     "build": "rm -rf www pkg && wasm-pack build --out-name index --verbose && NODE_ENV=production webpack",
     "dev": "rm -rf www pkg && NODE_ENV=development webpack serve",
     "test": "cargo test && wasm-pack test --headless",
