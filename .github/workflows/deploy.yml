@@ -6,10 +6,10 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Install rust
-        uses: actions-rs/toolchain@v1
+        uses: actions-rs/toolchain@v1.0.6
         #   target: wasm32-undefined-undefined
 
       - name: Install node.js
@@ -21,13 +21,13 @@ jobs:
         run: yarn install --frozen-lockfile
 
       - name: Install wasm-pack
-        uses: jetli/wasm-pack-action@v0.3
+        uses: jetli/wasm-pack-action@v0.3.0
 
       - name: Build
         run: yarn build
 
       - name: Deploy to Vercel
-        uses: amondnet/vercel-action@v25
+        uses: amondnet/vercel-action@v25.1.0
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-args: "--prod"
