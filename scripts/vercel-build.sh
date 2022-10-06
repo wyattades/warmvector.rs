@@ -10,8 +10,8 @@ source "$HOME/.cargo/env"
 
 
 echo "Installing wasm-pack..."
-# Install wasm-pack
-curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh -s -- -y
+# this branch fixes issue: https://github.com/rustwasm/wasm-pack/issues/823
+cargo install --git https://github.com/frewsxcv/wasm-pack.git --branch patch-2
 
 echo "Checking installation..."
-/vercel/.cargo/bin/wasm-pack --version
+wasm-pack --version
