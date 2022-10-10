@@ -37,7 +37,7 @@ fn add_player(mut commands: Commands) {
                 ..default()
             },
             transform: Transform {
-                translation: Vec3::new(60.0, 50.0, 0.0),
+                translation: Vec3::new(60.0, 50.0, 1.0),
                 scale: Vec3::new(PLAYER_SIZE.x, PLAYER_SIZE.y, 1.0),
                 ..default()
             },
@@ -147,5 +147,6 @@ fn move_camera(
     }
 
     camera_transform.translation =
-        (ease_vel + camera_flow.rotate_offset + player_tran.translation.truncate()).extend(0.0);
+        (ease_vel + camera_flow.rotate_offset + player_tran.translation.truncate())
+            .extend(camera_transform.translation.z);
 }
