@@ -31,7 +31,5 @@ pub fn create_app() {
 
 fn setup(mut commands: Commands) {
     // Camera
-    commands
-        .spawn_bundle(Camera2dBundle::default())
-        .insert(Velocity(Vec2::ZERO));
+    commands.spawn_bundle(Camera2dBundle::default());
 }
