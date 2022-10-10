@@ -9,18 +9,8 @@ impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_startup_system(add_player)
             .add_system(apply_inputs)
-            .add_system(move_camera.after(apply_velocity))
-            .insert_resource(CameraFlow {
-                vel: Vec2::ZERO,
-                // acc: Vec2::ZERO,
-            });
+            .add_system(move_camera.after(apply_velocity));
     }
-}
-
-#[derive(Component)]
-pub struct CameraFlow {
-    vel: Vec2,
-    // acc: Vec2,
 }
 
 #[derive(Component)]
@@ -97,12 +87,18 @@ pub fn apply_inputs(
         );
         transform.rotation = Quat::from_rotation_z(angle as f32);
     }
+
+#[derive(Default)]
+pub struct CameraFlow {
+    vel: Vec2,
+    // acc: Vec2,
+    rotate_offset: Vec2,
 }
 
 fn move_camera(
     player_query: Query<(&Transform, &Velocity), With<Player>>,
     windows: Res<Windows>,
-    mut camera_flow: ResMut<CameraFlow>,
+    mut camera_flow: Local<CameraFlow>, // Local variable to the system
     mut camera_query: Query<&mut Transform, (With<Camera2d>, Without<Player>)>,
 ) {
     let (player_tran, player_vel) = &player_query.single();
@@ -141,17 +137,15 @@ fn move_camera(
 
     const MAX_RADIUS: f32 = 100.0;
 
-    let rotate_offset = if let Some(mouse_pos) = window.cursor_position() {
+    if let Some(mouse_pos) = window.cursor_position() {
         let mouse_from_center = mouse_pos - window_dim * 0.5;
 
         let rotate_radius =
             MAX_RADIUS * (mouse_from_center - ease_vel).length() / (window_dim.x * 0.5);
 
-        mouse_from_center.normalize_or_zero() * rotate_radius
-    } else {
-        Vec2::ZERO
-    };
+        camera_flow.rotate_offset = mouse_from_center.normalize_or_zero() * rotate_radius;
+    }
 
     camera_transform.translation =
-        (ease_vel + rotate_offset + player_tran.translation.truncate()).extend(0.0);
+        (ease_vel + camera_flow.rotate_offset + player_tran.translation.truncate()).extend(0.0);
 }
