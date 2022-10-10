@@ -4,7 +4,7 @@ use bevy::prelude::*;
 use rand::prelude::*;
 
 use crate::{
-    entity::Velocity,
+    entity::{DynamicCollider, Velocity},
     level::setup_level,
     level::Level,
     player::{EntityName, Person, PLAYER_SIZE},
@@ -46,6 +46,7 @@ fn spawn_enemies(mut commands: Commands, level: Res<Level>) {
             .insert(Enemy)
             .insert(AiData {})
             .insert(Velocity(Vec2::ZERO))
+            .insert(DynamicCollider)
             .insert(Person)
             .insert(EntityName(format!("Enemy {}", i).to_string()))
             .insert_bundle(SpriteBundle {

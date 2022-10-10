@@ -2,12 +2,16 @@ use bevy::prelude::*;
 use easer::functions as easing;
 use easer::functions::Easing;
 
-use crate::entity::{apply_velocity, Velocity};
+use crate::{
+    entity::{apply_velocity, DynamicCollider, Velocity},
+    projectile::ProjectileBundle,
+};
 
 pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_startup_system(add_player)
+            .insert_resource(PlayerShootTimer(Timer::from_seconds(0.1, true)))
             .add_system(apply_inputs)
             .add_system(move_camera.after(apply_velocity));
     }
@@ -31,6 +35,7 @@ fn add_player(mut commands: Commands) {
         .insert(Person)
         .insert(Velocity(Vec2::ZERO))
         .insert(EntityName("My Player".to_string()))
+        .insert(DynamicCollider)
         .insert_bundle(SpriteBundle {
             sprite: Sprite {
                 color: Color::ANTIQUE_WHITE,
@@ -47,10 +52,16 @@ fn add_player(mut commands: Commands) {
 
 const PLAYER_SPEED: f32 = 1.5;
 
+pub struct PlayerShootTimer(Timer);
+
 pub fn apply_inputs(
+    time: Res<Time>,
+    mut player_shoot_timer: ResMut<PlayerShootTimer>,
     keyboard_input: Res<Input<KeyCode>>,
     windows: Res<Windows>,
+    buttons: Res<Input<MouseButton>>,
     mut player_query: Query<(&mut Velocity, &mut Transform), With<Player>>,
+    mut commands: Commands,
 ) {
     let (velocity, transform) = &mut player_query.single_mut();
 
@@ -73,20 +84,32 @@ pub fn apply_inputs(
     velocity.x = dir_x as f32 * PLAYER_SPEED;
     velocity.y = dir_y as f32 * PLAYER_SPEED;
 
-    // if dir_x != 0 || dir_y != 0 {
-    //     transform.translation.x += dir_x as f32 * PLAYER_SPEED;
-    //     transform.translation.y += dir_y as f32 * PLAYER_SPEED;
-    // }
-
-    // rotate sprite towards the mouse pointer
     let window = windows.get_primary().unwrap();
     if let Some(mouse_pos) = window.cursor_position() {
-        let angle = -libm::atan2(
-            (mouse_pos.x - window.width() * 0.5).into(),
-            (mouse_pos.y - window.height() * 0.5).into(),
-        );
-        transform.rotation = Quat::from_rotation_z(angle as f32);
+        let window_dim = Vec2::new(window.width(), window.height());
+
+        let delta = mouse_pos - window_dim * 0.5;
+        if delta.x == 0. && delta.y == 0. {
+            return;
+        }
+
+        // TODO: is there a native/bevy way to do this?
+        let angle = libm::atan2(delta.y.into(), delta.x.into()) as f32;
+
+        // rotate sprite towards the mouse pointer
+        transform.rotation = Quat::from_rotation_z(angle);
+
+        // left click to shoot
+        if buttons.pressed(MouseButton::Left)
+            && player_shoot_timer.0.tick(time.delta()).just_finished()
+        {
+            let world_pos =
+                transform.translation.truncate() + delta.normalize() * transform.scale.x;
+
+            commands.spawn_bundle(ProjectileBundle::new(world_pos, angle));
+        }
     }
+}
 
 #[derive(Default)]
 pub struct CameraFlow {

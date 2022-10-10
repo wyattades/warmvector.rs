@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use geo::{coord, Rect};
 
-use crate::entity::Collider;
+use crate::entity::StaticCollider;
 
 pub struct LevelPlugin;
 impl Plugin for LevelPlugin {
@@ -27,7 +27,7 @@ struct WallBundle {
     // Allowing you to compose their functionality
     #[bundle]
     sprite_bundle: SpriteBundle,
-    collider: Collider,
+    collider: StaticCollider,
 }
 
 /// Which side of the arena is this wall located on?
@@ -77,7 +77,7 @@ impl WallBundle {
                 },
                 ..default()
             },
-            collider: Collider,
+            collider: StaticCollider,
         }
     }
 }

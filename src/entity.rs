@@ -14,7 +14,10 @@ impl Plugin for EntityPlugin {
 }
 
 #[derive(Component)]
-pub struct Collider;
+pub struct StaticCollider;
+
+#[derive(Component)]
+pub struct DynamicCollider;
 
 #[derive(Component, Deref, DerefMut)]
 pub struct Velocity(pub Vec2);
@@ -27,16 +30,19 @@ pub fn apply_velocity(mut velocity_query: Query<(&mut Transform, &Velocity)>) {
 }
 
 fn check_collisions(
-    mut entity_query: Query<(&Transform, &mut Velocity, Option<&Player>), Without<Collider>>,
-    collider_query: Query<&Transform, &mut Collider>,
+    mut dynamic_collider_query: Query<
+        (&mut Transform, &mut Velocity, Option<&Player>),
+        (With<DynamicCollider>, Without<StaticCollider>),
+    >,
+    static_collider_query: Query<&Transform, (With<StaticCollider>, Without<DynamicCollider>)>,
 ) {
-    for (entity_transform, mut entity_velocity, maybe_player) in entity_query.iter_mut() {
-        for collider in &collider_query {
+    for (mut dynamic_t, mut entity_velocity, maybe_player) in dynamic_collider_query.iter_mut() {
+        for static_t in &static_collider_query {
             if let Some(collision) = collide(
-                entity_transform.translation,
-                entity_transform.scale.truncate(),
-                collider.translation,
-                collider.scale.truncate(),
+                dynamic_t.translation,
+                dynamic_t.scale.truncate(),
+                static_t.translation,
+                static_t.scale.truncate(),
             ) {
                 // reflect the ball when it collides
                 let mut reflect_x = false;
@@ -55,9 +61,20 @@ fn check_collisions(
                 let multiplier = if maybe_player.is_some() { 0. } else { -1. };
                 if reflect_x {
                     entity_velocity.x *= multiplier;
-                }
-                if reflect_y {
+                } else if reflect_y {
                     entity_velocity.y *= multiplier;
+                }
+
+                // TODO: doesn't work
+                if (reflect_x || reflect_y) && maybe_player.is_none() {
+                    let inverse = entity_velocity.x.signum() * entity_velocity.y.signum();
+                    let axis = inverse * if reflect_x { Vec2::Y } else { Vec2::X };
+
+                    // get angle of reflection for entity_velocity
+                    let velocity_angle = entity_velocity.angle_between(Vec2::X);
+                    let offset_angle = entity_velocity.angle_between(axis);
+
+                    dynamic_t.rotation = Quat::from_rotation_z(velocity_angle * 2. - offset_angle);
                 }
 
                 // break;

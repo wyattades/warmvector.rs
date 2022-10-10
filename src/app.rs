@@ -1,7 +1,7 @@
 use bevy::prelude::*;
-// use bevy_inspector_egui::WorldInspectorPlugin;
+use bevy_inspector_egui::WorldInspectorPlugin;
 
-use crate::{ai::*, entity::*, level::*, player::*, ui::*};
+use crate::{ai::*, entity::*, level::*, player::*, projectile::ProjectilePlugin, ui::*};
 
 pub fn create_app() {
     App::new()
@@ -17,8 +17,6 @@ pub fn create_app() {
         .insert_resource(ClearColor(Color::rgb(0.9, 0.5, 0.5)))
         // exit the game if press ESCAPE
         .add_system(bevy::window::close_on_esc)
-        // TODO: disable in production?
-        // .add_plugin(WorldInspectorPlugin::new())
         .add_startup_system(setup)
         .add_plugins(DefaultPlugins)
         .add_plugin(LevelPlugin)
@@ -26,6 +24,9 @@ pub fn create_app() {
         .add_plugin(PlayerPlugin)
         .add_plugin(AiPlugin)
         .add_plugin(UIPlugin)
+        .add_plugin(ProjectilePlugin)
+        // TODO: enable in dev?
+        // .add_plugin(WorldInspectorPlugin::new())
         .run();
 }
 
