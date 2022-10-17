@@ -76,16 +76,10 @@ fn check_collisions(
                     entity_velocity.y *= multiplier;
                 }
 
-                // TODO: doesn't work
                 if (reflect_x || reflect_y) && maybe_player.is_none() {
-                    let inverse = entity_velocity.x.signum() * entity_velocity.y.signum();
-                    let axis = inverse * if reflect_x { Vec2::Y } else { Vec2::X };
+                    let angle = -entity_velocity.0.angle_between(Vec2::X);
 
-                    // get angle of reflection for entity_velocity
-                    let velocity_angle = entity_velocity.angle_between(Vec2::X);
-                    let offset_angle = entity_velocity.angle_between(axis);
-
-                    dynamic_t.rotation = Quat::from_rotation_z(velocity_angle * 2. - offset_angle);
+                    dynamic_t.rotation = Quat::from_rotation_z(angle);
                 }
 
                 // break;

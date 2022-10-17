@@ -16,9 +16,7 @@ struct AiChangeDirectionTimer(Timer);
 pub struct Enemy;
 
 #[derive(Component)]
-struct AiData {
-    // TODO
-}
+struct AiData;
 
 pub struct AiPlugin;
 impl Plugin for AiPlugin {
