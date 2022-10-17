@@ -29,7 +29,7 @@ impl Plugin for AiPlugin {
     }
 }
 
-fn spawn_enemies(mut commands: Commands, level: Res<Level>) {
+fn spawn_enemies(mut commands: Commands, level: Res<Level>, asset_server: Res<AssetServer>) {
     let mut rng = thread_rng();
 
     let spawn_bounds = level.bounds.clone();
@@ -46,10 +46,11 @@ fn spawn_enemies(mut commands: Commands, level: Res<Level>) {
             .insert(Enemy)
             .insert(AiData {})
             .insert(Velocity(Vec2::ZERO))
-            .insert(DynamicCollider)
+            .insert(DynamicCollider { size: PLAYER_SIZE })
             .insert(Person)
             .insert(EntityName(format!("Enemy {}", i).to_string()))
             .insert_bundle(SpriteBundle {
+                texture: asset_server.load("images/enemy.png"),
                 sprite: Sprite {
                     color: Color::hsl(rng.gen_range(0.0..360.0), 1.0, 0.5),
                     ..default()
@@ -60,7 +61,6 @@ fn spawn_enemies(mut commands: Commands, level: Res<Level>) {
                         rng.gen_range(spawn_bounds.min().y..spawn_bounds.max().y),
                         0.0,
                     ),
-                    scale: Vec3::new(PLAYER_SIZE.x, PLAYER_SIZE.y, 1.0),
                     ..default()
                 },
                 ..default()

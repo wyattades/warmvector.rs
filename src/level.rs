@@ -77,7 +77,7 @@ impl WallBundle {
                 },
                 ..default()
             },
-            collider: StaticCollider,
+            collider: StaticCollider { size },
         }
     }
 }

@@ -24,23 +24,20 @@ pub struct ProjectileBundle {
     sprite_bundle: SpriteBundle,
     velocity: Velocity,
     hurt_person: HurtPerson,
-    _dynamic_collider: DynamicCollider,
+    collider: DynamicCollider,
 }
 
 impl ProjectileBundle {
-    pub fn new(position: Vec2, angle: f32) -> ProjectileBundle {
+    pub fn new(position: Vec2, angle: f32, asset_server: &AssetServer) -> ProjectileBundle {
         let speed = 3.;
 
         ProjectileBundle {
             sprite_bundle: SpriteBundle {
+                texture: asset_server.load("images/bullet.png"),
                 transform: Transform {
                     translation: position.extend(0.0),
-                    scale: Vec3::new(8., 4., 1.),
+                    scale: Vec2::splat(4.0).extend(1.0),
                     rotation: Quat::from_rotation_z(angle),
-                    ..default()
-                },
-                sprite: Sprite {
-                    color: Color::BLACK,
                     ..default()
                 },
                 ..default()
@@ -51,23 +48,25 @@ impl ProjectileBundle {
                 damage: 1.,
                 destroy_self: true,
             },
-            _dynamic_collider: DynamicCollider,
+            collider: DynamicCollider {
+                size: Vec2::splat(4.0),
+            },
         }
     }
 }
 
 fn check_projectile_collisions(
-    receiver_query: Query<(Entity, &Transform, Option<&Player>), With<Person>>,
-    projectile_query: Query<(Entity, &Transform, &HurtPerson)>,
+    receiver_query: Query<(Entity, &DynamicCollider, &Transform, Option<&Player>), With<Person>>,
+    projectile_query: Query<(Entity, &DynamicCollider, &Transform, &HurtPerson)>,
     mut commands: Commands,
 ) {
-    for (receiver_ent, receiver_t, maybe_player) in &receiver_query {
-        for (projectile_ent, projectile_t, hurt_person) in &projectile_query {
+    for (receiver_ent, receiver_c, receiver_t, maybe_player) in &receiver_query {
+        for (projectile_ent, projectile_c, projectile_t, hurt_person) in &projectile_query {
             if collide(
                 receiver_t.translation,
-                receiver_t.scale.truncate(),
+                receiver_c.size,
                 projectile_t.translation,
-                projectile_t.scale.truncate(),
+                projectile_c.size,
             )
             .is_some()
             {

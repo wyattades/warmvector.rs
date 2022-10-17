@@ -28,22 +28,19 @@ pub struct EntityName(pub String);
 
 pub const PLAYER_SIZE: Vec2 = Vec2::new(32., 32.);
 
-fn add_player(mut commands: Commands) {
+fn add_player(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .spawn()
         .insert(Player)
         .insert(Person)
         .insert(Velocity(Vec2::ZERO))
         .insert(EntityName("My Player".to_string()))
-        .insert(DynamicCollider)
+        .insert(DynamicCollider { size: PLAYER_SIZE })
         .insert_bundle(SpriteBundle {
-            sprite: Sprite {
-                color: Color::ANTIQUE_WHITE,
-                ..default()
-            },
+            texture: asset_server.load("images/player.png"),
+            sprite: Sprite::default(),
             transform: Transform {
                 translation: Vec3::new(60.0, 50.0, 1.0),
-                scale: Vec3::new(PLAYER_SIZE.x, PLAYER_SIZE.y, 1.0),
                 ..default()
             },
             ..default()
@@ -60,10 +57,11 @@ pub fn apply_inputs(
     keyboard_input: Res<Input<KeyCode>>,
     windows: Res<Windows>,
     buttons: Res<Input<MouseButton>>,
-    mut player_query: Query<(&mut Velocity, &mut Transform), With<Player>>,
+    mut player_query: Query<(&mut Velocity, &DynamicCollider, &mut Transform), With<Player>>,
     mut commands: Commands,
+    asset_server: Res<AssetServer>,
 ) {
-    let (velocity, transform) = &mut player_query.single_mut();
+    let (velocity, collider, transform) = &mut player_query.single_mut();
 
     let mut dir_x = 0;
     let mut dir_y = 0;
@@ -103,10 +101,9 @@ pub fn apply_inputs(
         if buttons.pressed(MouseButton::Left)
             && player_shoot_timer.0.tick(time.delta()).just_finished()
         {
-            let world_pos =
-                transform.translation.truncate() + delta.normalize() * transform.scale.x;
+            let world_pos = transform.translation.truncate() + delta.normalize() * collider.size.x;
 
-            commands.spawn_bundle(ProjectileBundle::new(world_pos, angle));
+            commands.spawn_bundle(ProjectileBundle::new(world_pos, angle, &asset_server));
         }
     }
 }

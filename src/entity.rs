@@ -14,10 +14,14 @@ impl Plugin for EntityPlugin {
 }
 
 #[derive(Component)]
-pub struct StaticCollider;
+pub struct StaticCollider {
+    pub size: Vec2,
+}
 
 #[derive(Component)]
-pub struct DynamicCollider;
+pub struct DynamicCollider {
+    pub size: Vec2,
+}
 
 #[derive(Component, Deref, DerefMut)]
 pub struct Velocity(pub Vec2);
@@ -31,18 +35,25 @@ pub fn apply_velocity(mut velocity_query: Query<(&mut Transform, &Velocity)>) {
 
 fn check_collisions(
     mut dynamic_collider_query: Query<
-        (&mut Transform, &mut Velocity, Option<&Player>),
-        (With<DynamicCollider>, Without<StaticCollider>),
+        (
+            &DynamicCollider,
+            &mut Transform,
+            &mut Velocity,
+            Option<&Player>,
+        ),
+        Without<StaticCollider>,
     >,
-    static_collider_query: Query<&Transform, (With<StaticCollider>, Without<DynamicCollider>)>,
+    static_collider_query: Query<(&StaticCollider, &Transform), Without<DynamicCollider>>,
 ) {
-    for (mut dynamic_t, mut entity_velocity, maybe_player) in dynamic_collider_query.iter_mut() {
-        for static_t in &static_collider_query {
+    for (dynamic_collider, mut dynamic_t, mut entity_velocity, maybe_player) in
+        dynamic_collider_query.iter_mut()
+    {
+        for (static_collider, static_t) in &static_collider_query {
             if let Some(collision) = collide(
                 dynamic_t.translation,
-                dynamic_t.scale.truncate(),
+                dynamic_collider.size,
                 static_t.translation,
-                static_t.scale.truncate(),
+                static_collider.size,
             ) {
                 // reflect the ball when it collides
                 let mut reflect_x = false;
