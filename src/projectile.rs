@@ -1,4 +1,5 @@
 use bevy::{prelude::*, sprite::collide_aabb::collide};
+use rand::prelude::*;
 
 use crate::{
     entity::{DynamicCollider, Velocity},
@@ -31,13 +32,22 @@ impl ProjectileBundle {
     pub fn new(position: Vec2, angle: f32, asset_server: &AssetServer) -> ProjectileBundle {
         let speed = 3.;
 
+        let mut rng = thread_rng();
+
+        let scale = 4.;
+        let size = Vec2::new(5., 3.) * scale;
+
         ProjectileBundle {
             sprite_bundle: SpriteBundle {
                 texture: asset_server.load("images/bullet.png"),
                 transform: Transform {
                     translation: position.extend(0.0),
-                    scale: Vec2::splat(4.0).extend(1.0),
+                    scale: Vec2::splat(scale).extend(1.0),
                     rotation: Quat::from_rotation_z(angle),
+                    ..default()
+                },
+                sprite: Sprite {
+                    color: Color::hsl(rng.gen_range(0.0..360.0), 1.0, 0.5),
                     ..default()
                 },
                 ..default()
@@ -48,9 +58,7 @@ impl ProjectileBundle {
                 damage: 1.,
                 destroy_self: true,
             },
-            collider: DynamicCollider {
-                size: Vec2::splat(4.0),
-            },
+            collider: DynamicCollider { size },
         }
     }
 }
