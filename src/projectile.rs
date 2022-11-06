@@ -69,6 +69,7 @@ fn check_projectile_collisions(
     hurter_query: Query<(Entity, &HurtPerson)>,
     mut commands: Commands,
 ) {
+    // TODO: handle project hitting multiple things
     for collision_event in collision_events.iter() {
         if let Some((entity_a, entity_b)) = match collision_event {
             CollisionEvent::Started(a, b, _flags) => Some((a, b)),

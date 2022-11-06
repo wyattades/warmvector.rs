@@ -23,6 +23,7 @@ geo = "0.23.0"
 geo-booleanop = "0.3.2"
 rand = "0.8.5"
 easer = "0.3.0"
+bevy_prototype_lyon = "0.6.0" # 2D graphics
 
 [dependencies.bevy_rapier2d]
 version = "0.17.0"

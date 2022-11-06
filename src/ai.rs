@@ -99,7 +99,7 @@ fn move_ai(
     }
 
     // move towards target by applying force, stronger the farther away
-    for (mut ext_force, transform, velocity, mut ai_data) in ai_query.iter_mut() {
+    for (mut ext_force, transform, velocity, ai_data) in ai_query.iter_mut() {
         if let Some(target) = ai_data.target {
             // apply force to get to target and stop
             let delta = target - transform.translation.truncate();

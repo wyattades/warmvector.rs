@@ -1,4 +1,8 @@
 use bevy::prelude::*;
+use bevy_prototype_lyon::{
+    entity::ShapeBundle,
+    prelude::{FillMode, *},
+};
 use bevy_rapier2d::prelude::*;
 use geo::{coord, Rect};
 
@@ -8,7 +12,7 @@ pub struct LevelPlugin;
 impl Plugin for LevelPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(Level {
-            bounds: Rect::new(coord! {x: 10., y: 10.}, coord! {x: 800., y: 600.}),
+            bounds: Rect::new(coord! {x: 10., y: 10.}, coord! {x: 1200., y: 800.}),
         })
         .add_startup_system(setup_level);
     }
@@ -30,7 +34,7 @@ impl Level {
     }
 }
 
-pub const WALL_THICKNESS: f32 = 5.;
+pub const WALL_THICKNESS: f32 = 10.;
 const WALL_COLOR: Color = Color::rgb(0.8, 0.8, 0.8);
 
 // This bundle is a collection of the components that define a "wall" in our game
@@ -39,7 +43,8 @@ struct WallBundle {
     // You can nest bundles inside of other bundles like this
     // Allowing you to compose their functionality
     #[bundle]
-    sprite_bundle: SpriteBundle,
+    shape_bundle: ShapeBundle,
+    // sprite_bundle: SpriteBundle,
     collider: Collider,
 }
 
@@ -80,20 +85,36 @@ impl WallBundle {
         };
 
         WallBundle {
-            sprite_bundle: SpriteBundle {
-                transform: Transform {
+            shape_bundle: GeometryBuilder::build_as(
+                &shapes::Rectangle {
+                    extents: size,
+                    ..default()
+                },
+                DrawMode::Outlined {
+                    fill_mode: FillMode::color(Color::CYAN),
+                    outline_mode: StrokeMode::new(Color::BLACK, 10.0),
+                },
+                Transform {
                     // make sure to add the `z` value
                     translation: position.extend(0.0),
                     // scale: (size).extend(1.0),
                     ..default()
                 },
-                sprite: Sprite {
-                    color: WALL_COLOR,
-                    ..default()
-                },
-                ..default()
-            },
-            collider: Collider::cuboid(size.x, size.y),
+            ),
+            // sprite_bundle: SpriteBundle {
+            //     transform: Transform {
+            //         // make sure to add the `z` value
+            //         translation: position.extend(0.0),
+            //         // scale: (size).extend(1.0),
+            //         ..default()
+            //     },
+            //     sprite: Sprite {
+            //         color: WALL_COLOR,
+            //         ..default()
+            //     },
+            //     ..default()
+            // },
+            collider: Collider::cuboid(size.x * 0.5, size.y * 0.5),
         }
     }
 }
