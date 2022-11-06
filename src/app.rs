@@ -1,4 +1,4 @@
-use bevy::{prelude::*, render::texture::ImageSettings};
+use bevy::{asset::AssetServerSettings, prelude::*, render::texture::ImageSettings};
 // use bevy_inspector_egui::WorldInspectorPlugin;
 use bevy_rapier2d::prelude::*;
 
@@ -16,7 +16,12 @@ pub fn create_app() {
         })
         // background color
         .insert_resource(ClearColor(Color::rgb(0.9, 0.5, 0.5)))
+        // pixel art
         .insert_resource(ImageSettings::default_nearest())
+        .insert_resource(AssetServerSettings {
+            watch_for_changes: true,
+            ..default()
+        })
         // exit the game if press ESCAPE
         .add_system(bevy::window::close_on_esc)
         .add_startup_system(setup)

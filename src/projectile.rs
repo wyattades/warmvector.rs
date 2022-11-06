@@ -55,6 +55,7 @@ pub fn spawn_projectile(
             5. * METERS_PER_PIXEL,
             3. * METERS_PER_PIXEL,
         ))
+        .insert(ActiveEvents::COLLISION_EVENTS)
         .insert(Velocity {
             linvel: Vec2::from_angle(angle) * speed,
             ..default()
@@ -63,10 +64,9 @@ pub fn spawn_projectile(
 }
 
 fn check_projectile_collisions(
-    // rapier_context: Res<RapierContext>,
     mut collision_events: EventReader<CollisionEvent>,
-    // receiver_query: Query<(Entity, &DynamicCollider, &Transform, Option<&Player>), With<Person>>,
-    // projectile_query: Query<(Entity, &DynamicCollider, &Transform, &HurtPerson)>,
+    hurted_query: Query<(Entity, Option<&Player>), With<Person>>,
+    hurter_query: Query<(Entity, &HurtPerson)>,
     mut commands: Commands,
 ) {
     for collision_event in collision_events.iter() {
@@ -74,36 +74,25 @@ fn check_projectile_collisions(
             CollisionEvent::Started(a, b, _flags) => Some((a, b)),
             CollisionEvent::Stopped(_a, _b, _flags) => None,
         } {
-            println!("Received collision event: {:?} <> {:?}", entity_a, entity_b);
+            // get the HurtPerson component from entity_a or entity_b
+            let (hurter_entity, hurted_entity, hurt_person) =
+                if let Ok((_entity, hurt_person)) = hurter_query.get(*entity_a) {
+                    (*entity_a, *entity_b, hurt_person)
+                } else if let Ok((_entity, hurt_person)) = hurter_query.get(*entity_b) {
+                    (*entity_b, *entity_a, hurt_person)
+                } else {
+                    continue;
+                };
+
+            if let Ok((entity, maybe_person)) = hurted_query.get(hurted_entity) {
+                if !maybe_person.is_some() {
+                    commands.entity(entity).despawn();
+
+                    if hurt_person.destroy_self {
+                        commands.entity(hurter_entity).despawn();
+                    }
+                }
+            }
         }
     }
-
-    // for (receiver_ent, receiver_c, receiver_t, maybe_player) in &receiver_query {
-    //     for (projectile_ent, projectile_c, projectile_t, hurt_person) in &projectile_query {
-    //         if collide(
-    //             receiver_t.translation,
-    //             receiver_c.size,
-    //             projectile_t.translation,
-    //             projectile_c.size,
-    //         )
-    //         .is_some()
-    //         {
-    //             // TODO: damage system
-    //             if hurt_person.damage > 0. {
-    //                 if maybe_player.is_some() {
-    //                     // TODO
-    //                     println!("Player hit!");
-    //                 } else {
-    //                     commands.entity(receiver_ent).despawn();
-    //                 }
-    //             }
-
-    //             if hurt_person.destroy_self {
-    //                 commands.entity(projectile_ent).despawn();
-    //             }
-
-    //             break;
-    //         }
-    //     }
-    // }
 }
