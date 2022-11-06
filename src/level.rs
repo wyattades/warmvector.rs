@@ -2,6 +2,8 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use geo::{coord, Rect};
 
+use crate::player::PLAYER_SIZE;
+
 pub struct LevelPlugin;
 impl Plugin for LevelPlugin {
     fn build(&self, app: &mut App) {
@@ -16,7 +18,19 @@ pub struct Level {
     pub bounds: Rect<f32>,
 }
 
-const WALL_THICKNESS: f32 = 5.;
+impl Level {
+    pub fn spawn_bounds(&self) -> Rect<f32> {
+        let spawn_bounds = self.bounds.clone();
+        let padding = PLAYER_SIZE.x / 2. + WALL_THICKNESS / 2.;
+        spawn_bounds.min().x += padding;
+        spawn_bounds.max().x -= padding;
+        spawn_bounds.min().y += padding;
+        spawn_bounds.max().y -= padding;
+        spawn_bounds
+    }
+}
+
+pub const WALL_THICKNESS: f32 = 5.;
 const WALL_COLOR: Color = Color::rgb(0.8, 0.8, 0.8);
 
 // This bundle is a collection of the components that define a "wall" in our game
