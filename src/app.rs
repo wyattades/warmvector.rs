@@ -1,7 +1,8 @@
 use bevy::{prelude::*, render::texture::ImageSettings};
 // use bevy_inspector_egui::WorldInspectorPlugin;
+use bevy_rapier2d::prelude::*;
 
-use crate::{ai::*, entity::*, level::*, player::*, projectile::ProjectilePlugin, ui::*};
+use crate::{ai::*, level::*, player::*, projectile::ProjectilePlugin, ui::*};
 
 pub fn create_app() {
     App::new()
@@ -20,8 +21,13 @@ pub fn create_app() {
         .add_system(bevy::window::close_on_esc)
         .add_startup_system(setup)
         .add_plugins(DefaultPlugins)
+        .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
+        .add_plugin(RapierDebugRenderPlugin::default())
+        .insert_resource(RapierConfiguration {
+            gravity: Vec2::ZERO,
+            ..default()
+        })
         .add_plugin(LevelPlugin)
-        .add_plugin(EntityPlugin)
         .add_plugin(PlayerPlugin)
         .add_plugin(AiPlugin)
         .add_plugin(UIPlugin)

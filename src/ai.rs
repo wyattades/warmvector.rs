@@ -1,12 +1,12 @@
 use std::f32::consts::PI;
 
 use bevy::prelude::*;
+use bevy_rapier2d::prelude::*;
 use rand::prelude::*;
 
 use crate::{
-    entity::{DynamicCollider, Velocity},
-    level::setup_level,
     level::Level,
+    level::{setup_level, PIXELS_PER_METER},
     player::{EntityName, Person, PLAYER_SIZE},
 };
 
@@ -43,12 +43,13 @@ fn spawn_enemies(mut commands: Commands, level: Res<Level>, asset_server: Res<As
             .spawn()
             .insert(Enemy)
             .insert(AiData {})
-            .insert(Velocity(Vec2::ZERO))
-            .insert(DynamicCollider { size: PLAYER_SIZE })
+            .insert(Velocity::zero())
+            .insert(Collider::ball(PLAYER_SIZE.x / 2.))
+            .insert(RigidBody::Dynamic)
             .insert(Person)
             .insert(EntityName(format!("Enemy {}", i).to_string()))
             .insert_bundle(SpriteBundle {
-                texture: asset_server.load("images/enemy.png"),
+                texture: asset_server.load("images/enemy.png"), // 48x48
                 sprite: Sprite {
                     color: Color::hsl(rng.gen_range(0.0..360.0), 1.0, 0.5),
                     ..default()
@@ -59,6 +60,7 @@ fn spawn_enemies(mut commands: Commands, level: Res<Level>, asset_server: Res<As
                         rng.gen_range(spawn_bounds.min().y..spawn_bounds.max().y),
                         0.0,
                     ),
+                    // scale: Vec2::splat(PIXELS_PER_METER).extend(1.0),
                     ..default()
                 },
                 ..default()
@@ -66,7 +68,7 @@ fn spawn_enemies(mut commands: Commands, level: Res<Level>, asset_server: Res<As
     }
 }
 
-const ENEMY_SPEED: f32 = 1.0;
+const ENEMY_SPEED: f32 = 100.0;
 
 fn move_ai(
     time: Res<Time>,
@@ -76,11 +78,11 @@ fn move_ai(
     if timer.0.tick(time.delta()).just_finished() {
         let mut rng = thread_rng();
         for mut velocity in &mut ai_query {
-            velocity.clone_from(&if rng.gen_bool(0.7) {
+            velocity.linvel = if rng.gen_bool(0.7) {
                 Vec2::from_angle(rng.gen_range(0.0..(2.0 * PI))).clamp_length_min(ENEMY_SPEED)
             } else {
                 Vec2::ZERO
-            });
+            }
         }
     }
 }

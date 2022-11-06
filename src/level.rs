@@ -1,7 +1,6 @@
 use bevy::prelude::*;
+use bevy_rapier2d::prelude::*;
 use geo::{coord, Rect};
-
-use crate::entity::StaticCollider;
 
 pub struct LevelPlugin;
 impl Plugin for LevelPlugin {
@@ -17,7 +16,7 @@ pub struct Level {
     pub bounds: Rect<f32>,
 }
 
-const WALL_THICKNESS: f32 = 10.0;
+const WALL_THICKNESS: f32 = 5.;
 const WALL_COLOR: Color = Color::rgb(0.8, 0.8, 0.8);
 
 // This bundle is a collection of the components that define a "wall" in our game
@@ -27,7 +26,7 @@ struct WallBundle {
     // Allowing you to compose their functionality
     #[bundle]
     sprite_bundle: SpriteBundle,
-    collider: StaticCollider,
+    collider: Collider,
 }
 
 /// Which side of the arena is this wall located on?
@@ -37,6 +36,9 @@ enum WallLocation {
     Bottom,
     Top,
 }
+
+pub const PIXELS_PER_METER: f32 = 0.8;
+pub const METERS_PER_PIXEL: f32 = 1.0 / PIXELS_PER_METER;
 
 impl WallBundle {
     // This "builder method" allows us to reuse logic across our wall entities,
@@ -68,7 +70,7 @@ impl WallBundle {
                 transform: Transform {
                     // make sure to add the `z` value
                     translation: position.extend(0.0),
-                    scale: size.extend(1.0),
+                    // scale: (size).extend(1.0),
                     ..default()
                 },
                 sprite: Sprite {
@@ -77,7 +79,7 @@ impl WallBundle {
                 },
                 ..default()
             },
-            collider: StaticCollider { size },
+            collider: Collider::cuboid(size.x, size.y),
         }
     }
 }

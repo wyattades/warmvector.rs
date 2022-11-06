@@ -1,11 +1,10 @@
 use bevy::prelude::*;
+use bevy_rapier2d::prelude::*;
 use easer::functions as easing;
 use easer::functions::Easing;
 
-use crate::{
-    entity::{apply_velocity, DynamicCollider, Velocity},
-    projectile::ProjectileBundle,
-};
+use crate::level::{METERS_PER_PIXEL, PIXELS_PER_METER};
+use crate::projectile::spawn_projectile;
 
 pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
@@ -13,7 +12,7 @@ impl Plugin for PlayerPlugin {
         app.add_startup_system(add_player)
             .insert_resource(PlayerShootTimer(Timer::from_seconds(0.1, true)))
             .add_system(apply_inputs)
-            .add_system(move_camera.after(apply_velocity));
+            .add_system(move_camera);
     }
 }
 
@@ -26,28 +25,30 @@ pub struct Person;
 #[derive(Component)]
 pub struct EntityName(pub String);
 
-pub const PLAYER_SIZE: Vec2 = Vec2::new(32., 32.);
+pub const PLAYER_SIZE: Vec2 = Vec2::new(32. * METERS_PER_PIXEL, 32. * METERS_PER_PIXEL);
 
 fn add_player(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .spawn()
         .insert(Player)
         .insert(Person)
-        .insert(Velocity(Vec2::ZERO))
+        .insert(Velocity::zero())
         .insert(EntityName("My Player".to_string()))
-        .insert(DynamicCollider { size: PLAYER_SIZE })
+        .insert(Collider::ball(PLAYER_SIZE.x / 2.))
+        .insert(RigidBody::Dynamic)
         .insert_bundle(SpriteBundle {
-            texture: asset_server.load("images/player.png"),
+            texture: asset_server.load("images/player.png"), // 48x48
             sprite: Sprite::default(),
             transform: Transform {
                 translation: Vec3::new(60.0, 50.0, 1.0),
+                // scale: Vec2::splat(PIXELS_PER_METER).extend(1.0),
                 ..default()
             },
             ..default()
         });
 }
 
-const PLAYER_SPEED: f32 = 1.5;
+const PLAYER_SPEED: f32 = 200.;
 
 pub struct PlayerShootTimer(Timer);
 
@@ -57,7 +58,7 @@ pub fn apply_inputs(
     keyboard_input: Res<Input<KeyCode>>,
     windows: Res<Windows>,
     buttons: Res<Input<MouseButton>>,
-    mut player_query: Query<(&mut Velocity, &DynamicCollider, &mut Transform), With<Player>>,
+    mut player_query: Query<(&mut Velocity, &Collider, &mut Transform), With<Player>>,
     mut commands: Commands,
     asset_server: Res<AssetServer>,
 ) {
@@ -79,8 +80,7 @@ pub fn apply_inputs(
         dir_y -= 1;
     }
 
-    velocity.x = dir_x as f32 * PLAYER_SPEED;
-    velocity.y = dir_y as f32 * PLAYER_SPEED;
+    velocity.linvel = Vec2::new(dir_x as f32, dir_y as f32) * PLAYER_SPEED;
 
     let window = windows.get_primary().unwrap();
     if let Some(mouse_pos) = window.cursor_position() {
@@ -91,8 +91,8 @@ pub fn apply_inputs(
             return;
         }
 
-        // TODO: is there a native/bevy way to do this?
-        let angle = libm::atan2(delta.y.into(), delta.x.into()) as f32;
+        // TODO: use core_ext::vec_angle()
+        let angle = delta.y.atan2(delta.x);
 
         // rotate sprite towards the mouse pointer
         transform.rotation = Quat::from_rotation_z(angle);
@@ -101,9 +101,10 @@ pub fn apply_inputs(
         if buttons.pressed(MouseButton::Left)
             && player_shoot_timer.0.tick(time.delta()).just_finished()
         {
-            let world_pos = transform.translation.truncate() + delta.normalize() * collider.size.x;
+            let world_pos = transform.translation.truncate()
+                + delta.normalize() * (collider.as_ball().unwrap().radius() * 2.);
 
-            commands.spawn_bundle(ProjectileBundle::new(world_pos, angle, &asset_server));
+            spawn_projectile(&mut commands, &asset_server, world_pos, angle);
         }
     }
 }
@@ -129,7 +130,7 @@ fn move_camera(
     const MAX_SPEED: f32 = 40.0;
     const ACCEL_RATE: f32 = 1.0;
 
-    if player_vel.x == 0. && player_vel.y == 0. {
+    if player_vel.linvel.x == 0. && player_vel.linvel.y == 0. {
         let length_sq = camera_flow.vel.length_squared();
         if length_sq >= ACCEL_RATE * 2. {
             let accel = camera_flow.vel.normalize_or_zero() * ACCEL_RATE;
@@ -138,7 +139,7 @@ fn move_camera(
             camera_flow.vel = Vec2::ZERO;
         }
     } else {
-        let accel = player_vel.normalize_or_zero() * ACCEL_RATE;
+        let accel = player_vel.linvel.normalize_or_zero() * ACCEL_RATE;
         camera_flow.vel += accel;
         camera_flow.vel = camera_flow.vel.clamp_length_max(MAX_SPEED);
     }

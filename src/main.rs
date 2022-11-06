@@ -1,6 +1,6 @@
 mod ai;
 mod app;
-mod entity;
+mod core_ext;
 mod level;
 mod player;
 mod projectile;
