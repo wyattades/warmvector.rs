@@ -3,7 +3,8 @@ use bevy_rapier2d::prelude::*;
 use easer::functions as easing;
 use easer::functions::Easing;
 
-use crate::level::{METERS_PER_PIXEL, PIXELS_PER_METER};
+use crate::core_ext::AngleExt;
+use crate::level::METERS_PER_PIXEL;
 use crate::projectile::spawn_projectile;
 
 pub struct PlayerPlugin;
@@ -91,8 +92,7 @@ pub fn apply_inputs(
             return;
         }
 
-        // TODO: use core_ext::vec_angle()
-        let angle = delta.y.atan2(delta.x);
+        let angle = delta.vec_angle();
 
         // rotate sprite towards the mouse pointer
         transform.rotation = Quat::from_rotation_z(angle);

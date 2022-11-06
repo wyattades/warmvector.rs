@@ -3,7 +3,7 @@ use bevy_rapier2d::prelude::*;
 use rand::prelude::*;
 
 use crate::{
-    level::{METERS_PER_PIXEL, PIXELS_PER_METER},
+    level::METERS_PER_PIXEL,
     player::{Person, Player},
 };
 
@@ -85,6 +85,7 @@ fn check_projectile_collisions(
                 };
 
             if let Ok((entity, maybe_person)) = hurted_query.get(hurted_entity) {
+                println!("Protectile hit person for {:?} damage", hurt_person.damage);
                 if !maybe_person.is_some() {
                     commands.entity(entity).despawn();
 

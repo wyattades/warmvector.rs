@@ -1,6 +1,6 @@
 use bevy::prelude::Vec2;
 
-trait AngleExt {
+pub trait AngleExt {
     fn vec_angle(&self) -> f32;
 }
 

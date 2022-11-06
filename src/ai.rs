@@ -5,8 +5,8 @@ use bevy_rapier2d::prelude::*;
 use rand::prelude::*;
 
 use crate::{
+    level::setup_level,
     level::Level,
-    level::{setup_level, PIXELS_PER_METER},
     player::{EntityName, Person, PLAYER_SIZE},
 };
 
