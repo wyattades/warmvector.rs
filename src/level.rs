@@ -6,7 +6,7 @@ use bevy_prototype_lyon::{
 use bevy_rapier2d::prelude::*;
 use geo::{coord, Rect};
 
-use crate::player::PLAYER_SIZE;
+use crate::{core_ext::RectExt, player::PLAYER_SIZE};
 
 pub struct LevelPlugin;
 impl Plugin for LevelPlugin {
@@ -24,13 +24,8 @@ pub struct Level {
 
 impl Level {
     pub fn spawn_bounds(&self) -> Rect<f32> {
-        let spawn_bounds = self.bounds.clone();
-        let padding = PLAYER_SIZE.x / 2. + WALL_THICKNESS / 2.;
-        spawn_bounds.min().x += padding;
-        spawn_bounds.max().x -= padding;
-        spawn_bounds.min().y += padding;
-        spawn_bounds.max().y -= padding;
-        spawn_bounds
+        self.bounds
+            .expand(-(PLAYER_SIZE.x / 2. + WALL_THICKNESS / 2.))
     }
 }
 
@@ -60,8 +55,6 @@ pub const PIXELS_PER_METER: f32 = 0.8;
 pub const METERS_PER_PIXEL: f32 = 1.0 / PIXELS_PER_METER;
 
 impl WallBundle {
-    // This "builder method" allows us to reuse logic across our wall entities,
-    // making our code easier to read and less prone to bugs when we change the logic
     fn new(level: &Level, location: WallLocation) -> WallBundle {
         let geo::Coordinate { x: ax, y: ay } = level.bounds.min();
         let geo::Coordinate { x: bx, y: by } = level.bounds.max();
@@ -90,30 +83,12 @@ impl WallBundle {
                     extents: size,
                     ..default()
                 },
-                DrawMode::Outlined {
-                    fill_mode: FillMode::color(Color::CYAN),
-                    outline_mode: StrokeMode::new(Color::BLACK, 10.0),
-                },
+                DrawMode::Fill(FillMode::color(WALL_COLOR)),
                 Transform {
-                    // make sure to add the `z` value
                     translation: position.extend(0.0),
-                    // scale: (size).extend(1.0),
                     ..default()
                 },
             ),
-            // sprite_bundle: SpriteBundle {
-            //     transform: Transform {
-            //         // make sure to add the `z` value
-            //         translation: position.extend(0.0),
-            //         // scale: (size).extend(1.0),
-            //         ..default()
-            //     },
-            //     sprite: Sprite {
-            //         color: WALL_COLOR,
-            //         ..default()
-            //     },
-            //     ..default()
-            // },
             collider: Collider::cuboid(size.x * 0.5, size.y * 0.5),
         }
     }

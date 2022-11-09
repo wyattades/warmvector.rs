@@ -23,3 +23,17 @@ impl RandRectPoint for ThreadRng {
         )
     }
 }
+
+pub trait RectExt {
+    fn expand(&self, amount: f32) -> Rect<f32>;
+}
+impl RectExt for Rect<f32> {
+    fn expand(&self, amount: f32) -> Rect<f32> {
+        let clone = self.clone();
+        clone.min().x -= amount;
+        clone.max().x += amount;
+        clone.min().y -= amount;
+        clone.max().y += amount;
+        clone
+    }
+}
