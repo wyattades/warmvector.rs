@@ -77,7 +77,7 @@ impl WallBundle {
             }
         };
 
-        WallBundle {
+        Self {
             shape_bundle: GeometryBuilder::build_as(
                 &shapes::Rectangle {
                     extents: size,

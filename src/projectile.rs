@@ -51,10 +51,12 @@ pub fn spawn_projectile(
             destroy_self: true,
         })
         .insert(RigidBody::Dynamic)
-        .insert(Collider::cuboid(
-            5. * METERS_PER_PIXEL,
-            3. * METERS_PER_PIXEL,
-        ))
+        // .insert(Collider::cuboid(
+        //     5. * METERS_PER_PIXEL,
+        //     3. * METERS_PER_PIXEL,
+        // ))
+        .insert(Collider::ball(5. / 2. * METERS_PER_PIXEL))
+        // allows us to detect collisions with other entities, see: `EventReader<CollisionEvent>`
         .insert(ActiveEvents::COLLISION_EVENTS)
         .insert(Velocity {
             linvel: Vec2::from_angle(angle) * speed,
@@ -85,9 +87,10 @@ fn check_projectile_collisions(
                     continue;
                 };
 
-            if let Ok((entity, maybe_person)) = hurted_query.get(hurted_entity) {
-                println!("Protectile hit person for {:?} damage", hurt_person.damage);
-                if !maybe_person.is_some() {
+            if let Ok((entity, maybe_player)) = hurted_query.get(hurted_entity) {
+                if maybe_player.is_none() {
+                    println!("Protectile hit enemy for {:?} damage", hurt_person.damage);
+
                     commands.entity(entity).despawn();
 
                     if hurt_person.destroy_self {
