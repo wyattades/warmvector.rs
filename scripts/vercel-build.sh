@@ -8,10 +8,10 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 # Add binaries to path
 source "$HOME/.cargo/env"
 
-
 echo "Installing wasm-pack..."
-# this branch fixes issue: https://github.com/rustwasm/wasm-pack/issues/823 or https://github.com/rustwasm/wasm-pack/pull/1188
-cargo install --git https://github.com/frewsxcv/wasm-pack.git --branch patch-2
+# waiting for lib version bumb from PR: https://github.com/rustwasm/wasm-pack/pull/1188
+# which fixed: https://github.com/rustwasm/wasm-pack/issues/1186
+cargo install --git https://github.com/rustwasm/wasm-pack.git --branch master
 
 echo "Verifying installation..."
 wasm-pack --version
