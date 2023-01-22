@@ -10,7 +10,7 @@ source "$HOME/.cargo/env"
 
 
 echo "Installing wasm-pack..."
-# this branch fixes issue: https://github.com/rustwasm/wasm-pack/issues/823
+# this branch fixes issue: https://github.com/rustwasm/wasm-pack/issues/823 or https://github.com/rustwasm/wasm-pack/pull/1188
 cargo install --git https://github.com/frewsxcv/wasm-pack.git --branch patch-2
 
 echo "Verifying installation..."

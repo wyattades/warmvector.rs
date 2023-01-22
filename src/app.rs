@@ -1,7 +1,9 @@
-use bevy::{prelude::*, render::texture::ImageSettings};
+use bevy::{asset::AssetServerSettings, prelude::*, render::texture::ImageSettings};
 // use bevy_inspector_egui::WorldInspectorPlugin;
+use bevy_prototype_lyon::prelude::ShapePlugin;
+use bevy_rapier2d::prelude::*;
 
-use crate::{ai::*, entity::*, level::*, player::*, projectile::ProjectilePlugin, ui::*};
+use crate::{ai::*, level::*, player::*, projectile::ProjectilePlugin, ui::*};
 
 pub fn create_app() {
     App::new()
@@ -15,19 +17,34 @@ pub fn create_app() {
         })
         // background color
         .insert_resource(ClearColor(Color::rgb(0.9, 0.5, 0.5)))
+        // pixel art
         .insert_resource(ImageSettings::default_nearest())
+        .insert_resource(AssetServerSettings {
+            watch_for_changes: true,
+            ..default()
+        })
         // exit the game if press ESCAPE
         .add_system(bevy::window::close_on_esc)
         .add_startup_system(setup)
         .add_plugins(DefaultPlugins)
+        .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
+        .add_plugin(RapierDebugRenderPlugin {
+            // add physics debugger in dev
+            enabled: cfg!(debug_assertions),
+            ..default()
+        })
+        .insert_resource(RapierConfiguration {
+            gravity: Vec2::ZERO,
+            ..default()
+        })
+        .add_plugin(ShapePlugin)
+        // TODO: there doesn't seem to be a way to conditionally add a plugin
+        // .add_plugin(WorldInspectorPlugin::new())
         .add_plugin(LevelPlugin)
-        .add_plugin(EntityPlugin)
         .add_plugin(PlayerPlugin)
         .add_plugin(AiPlugin)
         .add_plugin(UIPlugin)
         .add_plugin(ProjectilePlugin)
-        // TODO: enable in dev?
-        // .add_plugin(WorldInspectorPlugin::new())
         .run();
 }
 

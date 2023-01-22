@@ -1,13 +1,18 @@
 use bevy::prelude::*;
+use bevy_prototype_lyon::{
+    entity::ShapeBundle,
+    prelude::{FillMode, *},
+};
+use bevy_rapier2d::prelude::*;
 use geo::{coord, Rect};
 
-use crate::entity::StaticCollider;
+use crate::{core_ext::RectExt, player::PLAYER_SIZE};
 
 pub struct LevelPlugin;
 impl Plugin for LevelPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(Level {
-            bounds: Rect::new(coord! {x: 10., y: 10.}, coord! {x: 800., y: 600.}),
+            bounds: Rect::new(coord! {x: 10., y: 10.}, coord! {x: 1200., y: 800.}),
         })
         .add_startup_system(setup_level);
     }
@@ -17,7 +22,14 @@ pub struct Level {
     pub bounds: Rect<f32>,
 }
 
-const WALL_THICKNESS: f32 = 10.0;
+impl Level {
+    pub fn spawn_bounds(&self) -> Rect<f32> {
+        self.bounds
+            .expand(-(PLAYER_SIZE.x / 2. + WALL_THICKNESS / 2.))
+    }
+}
+
+pub const WALL_THICKNESS: f32 = 10.;
 const WALL_COLOR: Color = Color::rgb(0.8, 0.8, 0.8);
 
 // This bundle is a collection of the components that define a "wall" in our game
@@ -26,8 +38,9 @@ struct WallBundle {
     // You can nest bundles inside of other bundles like this
     // Allowing you to compose their functionality
     #[bundle]
-    sprite_bundle: SpriteBundle,
-    collider: StaticCollider,
+    shape_bundle: ShapeBundle,
+    // sprite_bundle: SpriteBundle,
+    collider: Collider,
 }
 
 /// Which side of the arena is this wall located on?
@@ -38,9 +51,10 @@ enum WallLocation {
     Top,
 }
 
+pub const PIXELS_PER_METER: f32 = 0.8;
+pub const METERS_PER_PIXEL: f32 = 1.0 / PIXELS_PER_METER;
+
 impl WallBundle {
-    // This "builder method" allows us to reuse logic across our wall entities,
-    // making our code easier to read and less prone to bugs when we change the logic
     fn new(level: &Level, location: WallLocation) -> WallBundle {
         let geo::Coordinate { x: ax, y: ay } = level.bounds.min();
         let geo::Coordinate { x: bx, y: by } = level.bounds.max();
@@ -63,21 +77,19 @@ impl WallBundle {
             }
         };
 
-        WallBundle {
-            sprite_bundle: SpriteBundle {
-                transform: Transform {
-                    // make sure to add the `z` value
+        Self {
+            shape_bundle: GeometryBuilder::build_as(
+                &shapes::Rectangle {
+                    extents: size,
+                    ..default()
+                },
+                DrawMode::Fill(FillMode::color(WALL_COLOR)),
+                Transform {
                     translation: position.extend(0.0),
-                    scale: size.extend(1.0),
                     ..default()
                 },
-                sprite: Sprite {
-                    color: WALL_COLOR,
-                    ..default()
-                },
-                ..default()
-            },
-            collider: StaticCollider { size },
+            ),
+            collider: Collider::cuboid(size.x * 0.5, size.y * 0.5),
         }
     }
 }
