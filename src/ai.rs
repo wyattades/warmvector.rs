@@ -46,6 +46,10 @@ fn spawn_enemies(mut commands: Commands, level: Res<Level>, asset_server: Res<As
             .insert(Collider::ball(PLAYER_SIZE.x / 2.))
             .insert(RigidBody::Dynamic)
             .insert(ExternalForce::default())
+            .insert(Damping {
+                linear_damping: 0.8,
+                angular_damping: 0.8,
+            })
             .insert(Person)
             .insert(EntityName(format!("Enemy {}", i).to_string()))
             .insert_bundle(SpriteBundle {
@@ -106,12 +110,12 @@ fn move_ai(
             let distance = delta.length();
             // let direction = delta.normalize_or_zero();
 
-            ext_force.force = if distance > 40.0 {
-                delta * 1000.0
+            if distance > 40.0 {
+                ext_force.force = delta * 1000.0;
             } else {
                 // if we're close enough, slow to a stop
-                -velocity.linvel * 1000.0
-            };
+                // -velocity.linvel * 1000.0
+            }
 
             // if distance < 2.0 {
             //     let mut rng = thread_rng();
@@ -125,7 +129,7 @@ fn move_ai(
             // }
         } else {
             // slow down to a stop
-            ext_force.force = -velocity.linvel * 1000.0;
+            // ext_force.force = -velocity.linvel * 1000.0;
         }
     }
 }

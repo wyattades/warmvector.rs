@@ -36,7 +36,7 @@ fn add_player(mut commands: Commands, asset_server: Res<AssetServer>) {
         .insert(Velocity::zero())
         .insert(EntityName("My Player".to_string()))
         .insert(Collider::ball(PLAYER_SIZE.x / 2.))
-        .insert(RigidBody::Dynamic)
+        .insert(RigidBody::Dynamic) // TODO: use player-controller
         .insert_bundle(SpriteBundle {
             texture: asset_server.load("images/player.png"), // 48x48
             sprite: Sprite::default(),

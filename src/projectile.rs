@@ -55,7 +55,16 @@ pub fn spawn_projectile(
         //     5. * METERS_PER_PIXEL,
         //     3. * METERS_PER_PIXEL,
         // ))
-        .insert(Collider::ball(5. / 2. * METERS_PER_PIXEL))
+        .insert(Collider::ball(10. / 2. * METERS_PER_PIXEL))
+        .insert(Restitution {
+            coefficient: 1., // perfect bounciness. TODO: doesn't work
+            combine_rule: CoefficientCombineRule::Max,
+        })
+        .insert(Friction {
+            coefficient: 0., // no friction
+            combine_rule: CoefficientCombineRule::Min,
+        })
+        .insert(ColliderMassProperties::Density(3.))
         // allows us to detect collisions with other entities, see: `EventReader<CollisionEvent>`
         .insert(ActiveEvents::COLLISION_EVENTS)
         .insert(Velocity {
@@ -71,7 +80,6 @@ fn check_projectile_collisions(
     hurter_query: Query<(Entity, &HurtPerson)>,
     mut commands: Commands,
 ) {
-    // TODO: handle project hitting multiple things
     for collision_event in collision_events.iter() {
         if let Some((entity_a, entity_b)) = match collision_event {
             CollisionEvent::Started(a, b, _flags) => Some((a, b)),
@@ -91,6 +99,7 @@ fn check_projectile_collisions(
                 if maybe_player.is_none() {
                     println!("Protectile hit enemy for {:?} damage", hurt_person.damage);
 
+                    // NOTE: a previous collision_event might have already despawned this
                     commands.entity(entity).despawn();
 
                     if hurt_person.destroy_self {
