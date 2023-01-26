@@ -10,7 +10,7 @@ impl Plugin for UIPlugin {
 
 fn update_scoreboard(time: Res<Time>, mut query: Query<&mut Text, With<ScoreBoardUI>>) {
     let mut text = query.single_mut();
-    text.sections[1].value = format!("{:.1}", time.time_since_startup().as_secs_f32());
+    text.sections[1].value = format!("{:.1}", time.elapsed_seconds());
 }
 
 const SCOREBOARD_FONT_SIZE: f32 = 40.0;
@@ -21,7 +21,7 @@ const SCORE_COLOR: Color = Color::rgb(0.8, 0.8, 0.8);
 fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
     // Scoreboard
     commands
-        .spawn_bundle(
+        .spawn(
             TextBundle::from_sections([
                 TextSection::new(
                     "Score: ",

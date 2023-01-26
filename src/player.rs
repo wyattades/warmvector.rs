@@ -11,7 +11,10 @@ pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_startup_system(add_player)
-            .insert_resource(PlayerShootTimer(Timer::from_seconds(0.1, true)))
+            .insert_resource(PlayerShootTimer(Timer::from_seconds(
+                0.1,
+                TimerMode::Repeating,
+            )))
             .add_system(apply_inputs)
             .add_system(move_camera);
     }
@@ -30,14 +33,14 @@ pub const PLAYER_SIZE: Vec2 = Vec2::new(32. * METERS_PER_PIXEL, 32. * METERS_PER
 
 fn add_player(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
-        .spawn()
+        .spawn_empty()
         .insert(Player)
         .insert(Person)
         .insert(Velocity::zero())
         .insert(EntityName("My Player".to_string()))
         .insert(Collider::ball(PLAYER_SIZE.x / 2.))
         .insert(RigidBody::Dynamic) // TODO: use player-controller
-        .insert_bundle(SpriteBundle {
+        .insert(SpriteBundle {
             texture: asset_server.load("images/player.png"), // 48x48
             sprite: Sprite::default(),
             transform: Transform {
@@ -51,6 +54,7 @@ fn add_player(mut commands: Commands, asset_server: Res<AssetServer>) {
 
 const PLAYER_SPEED: f32 = 200.;
 
+#[derive(Resource)]
 pub struct PlayerShootTimer(Timer);
 
 pub fn apply_inputs(

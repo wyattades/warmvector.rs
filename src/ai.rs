@@ -9,6 +9,7 @@ use crate::{
     player::{EntityName, Person, PLAYER_SIZE},
 };
 
+#[derive(Resource)]
 struct AiChangeDirectionTimer(Timer);
 
 #[derive(Component)]
@@ -22,9 +23,12 @@ struct AiData {
 pub struct AiPlugin;
 impl Plugin for AiPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(AiChangeDirectionTimer(Timer::from_seconds(3.0, true)))
-            .add_startup_system(spawn_enemies.after(setup_level))
-            .add_system(move_ai);
+        app.insert_resource(AiChangeDirectionTimer(Timer::from_seconds(
+            3.0,
+            TimerMode::Repeating,
+        )))
+        .add_startup_system(spawn_enemies.after(setup_level))
+        .add_system(move_ai);
     }
 }
 
@@ -39,7 +43,7 @@ fn spawn_enemies(mut commands: Commands, level: Res<Level>, asset_server: Res<As
         let rand_pos = rng.rand_rect_point(&spawn_bounds);
 
         commands
-            .spawn()
+            .spawn_empty()
             .insert(Enemy)
             .insert(AiData::default())
             .insert(Velocity::zero())
@@ -52,7 +56,7 @@ fn spawn_enemies(mut commands: Commands, level: Res<Level>, asset_server: Res<As
             })
             .insert(Person)
             .insert(EntityName(format!("Enemy {}", i).to_string()))
-            .insert_bundle(SpriteBundle {
+            .insert(SpriteBundle {
                 texture: asset_server.load("images/enemy.png"), // 48x48
                 sprite: Sprite {
                     // add tint
@@ -103,7 +107,7 @@ fn move_ai(
     }
 
     // move towards target by applying force, stronger the farther away
-    for (mut ext_force, transform, velocity, ai_data) in ai_query.iter_mut() {
+    for (mut ext_force, transform, _velocity, ai_data) in ai_query.iter_mut() {
         if let Some(target) = ai_data.target {
             // apply force to get to target and stop
             let delta = target - transform.translation.truncate();

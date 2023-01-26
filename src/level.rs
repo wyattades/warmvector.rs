@@ -18,6 +18,7 @@ impl Plugin for LevelPlugin {
     }
 }
 
+#[derive(Resource)]
 pub struct Level {
     pub bounds: Rect<f32>,
 }
@@ -37,7 +38,6 @@ const WALL_COLOR: Color = Color::rgb(0.8, 0.8, 0.8);
 struct WallBundle {
     // You can nest bundles inside of other bundles like this
     // Allowing you to compose their functionality
-    #[bundle]
     shape_bundle: ShapeBundle,
     // sprite_bundle: SpriteBundle,
     collider: Collider,
@@ -56,8 +56,8 @@ pub const METERS_PER_PIXEL: f32 = 1.0 / PIXELS_PER_METER;
 
 impl WallBundle {
     fn new(level: &Level, location: WallLocation) -> WallBundle {
-        let geo::Coordinate { x: ax, y: ay } = level.bounds.min();
-        let geo::Coordinate { x: bx, y: by } = level.bounds.max();
+        let geo::Coord { x: ax, y: ay } = level.bounds.min();
+        let geo::Coord { x: bx, y: by } = level.bounds.max();
         let mx = (ax + bx) * 0.5;
         let my = (ay + by) * 0.5;
 
@@ -96,8 +96,8 @@ impl WallBundle {
 
 pub fn setup_level(mut commands: Commands, level: Res<Level>) {
     // Walls
-    commands.spawn_bundle(WallBundle::new(&level, WallLocation::Left));
-    commands.spawn_bundle(WallBundle::new(&level, WallLocation::Right));
-    commands.spawn_bundle(WallBundle::new(&level, WallLocation::Bottom));
-    commands.spawn_bundle(WallBundle::new(&level, WallLocation::Top));
+    commands.spawn(WallBundle::new(&level, WallLocation::Left));
+    commands.spawn(WallBundle::new(&level, WallLocation::Right));
+    commands.spawn(WallBundle::new(&level, WallLocation::Bottom));
+    commands.spawn(WallBundle::new(&level, WallLocation::Top));
 }

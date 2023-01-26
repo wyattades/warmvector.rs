@@ -31,8 +31,8 @@ pub fn spawn_projectile(
     let mut rng = thread_rng();
 
     commands
-        .spawn()
-        .insert_bundle(SpriteBundle {
+        .spawn_empty()
+        .insert(SpriteBundle {
             texture: asset_server.load("images/bullet.png"), // 5x3
             transform: Transform {
                 translation: position.extend(0.0),
